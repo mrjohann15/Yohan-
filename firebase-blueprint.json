@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A retail item offered for sale in the storefront catalog.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display title of the product.",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed product description, materials, or condition.",
+          "minLength": 0,
+          "maxLength": 1500
+        },
+        "price": {
+          "type": "number",
+          "description": "Unit price in PHP."
+        },
+        "category": {
+          "type": "string",
+          "description": "Storefront category label.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "stock": {
+          "type": "integer",
+          "description": "Available units in stock."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Product photograph URL, bundled asset path, or compressed data URI.",
+          "minLength": 0,
+          "maxLength": 200000
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether the product is visible to public shoppers."
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Whether the product is highlighted in the storefront."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the shop owner who created the item.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the product was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the product was last updated."
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "stock",
+        "imageUrl",
+        "isPublished",
+        "isFeatured",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": {
+        "$ref": "#/entities/Product"
+      },
+      "description": "Publicly readable catalog of published products; only the verified shop owner can create, edit, hide, or delete items."
+    }
+  }
+}

@@ -1,0 +1,113 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isSignedIn()
+        && request.auth.token.email == 'liennardjohn15@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'name',
+          'description',
+          'price',
+          'category',
+          'stock',
+          'imageUrl',
+          'isPublished',
+          'isFeatured',
+          'ownerId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'name',
+          'description',
+          'price',
+          'category',
+          'stock',
+          'imageUrl',
+          'isPublished',
+          'isFeatured',
+          'ownerId',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.name is string
+        && data.name.size() >= 2
+        && data.name.size() <= 120
+        && data.description is string
+        && data.description.size() <= 1500
+        && (data.price is int || data.price is float)
+        && data.price >= 0
+        && data.price <= 100000000
+        && data.category is string
+        && data.category.size() >= 1
+        && data.category.size() <= 60
+        && data.stock is int
+        && data.stock >= 0
+        && data.stock <= 1000000
+        && data.imageUrl is string
+        && data.imageUrl.size() <= 200000
+        && data.isPublished is bool
+        && data.isFeatured is bool
+        && data.ownerId is string
+        && data.ownerId.size() >= 1
+        && data.ownerId.size() <= 128
+        && data.ownerId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /products/{productId} {
+      allow get: if isValidId(productId) && (existing().isPublished == true || isOwner());
+      allow list: if resource.data.isPublished == true || isOwner();
+      allow create: if isOwner()
+        && isValidId(productId)
+        && isValidProduct(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isOwner()
+        && isValidId(productId)
+        && isValidProduct(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name',
+          'description',
+          'price',
+          'category',
+          'stock',
+          'imageUrl',
+          'isPublished',
+          'isFeatured',
+          'updatedAt'
+        ]);
+      allow delete: if isOwner() && isValidId(productId);
+    }
+  }
+}

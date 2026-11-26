@@ -1,0 +1,8 @@
+{
+  "name": "Tala Goods",
+  "description": "Curated retail storefront displaying items offered for sale, with owner tools to add, edit, and delete products.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
